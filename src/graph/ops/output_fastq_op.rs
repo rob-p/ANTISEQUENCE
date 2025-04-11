@@ -175,11 +175,6 @@ impl OutputFastqFileOp {
         let file_name = file_expr.eval_bytes(&read, false);
         let file_path = PathBuf::from(std::str::from_utf8(file_name.unwrap().borrow()).unwrap());
 
-        let b = LocalSetBuffer::new(1);
-        let c = RefCell::new(b);
-        let t = ThreadLocal::new();
-        t.get_or(|| c);
-
         let file_paths = vec![file_path];
         let fwriters = Mutex::new(init_writers(&file_paths).expect("couldn't initialize writers"));
         Self {
@@ -187,7 +182,7 @@ impl OutputFastqFileOp {
             file_exprs: vec![file_expr],
             file_paths,
             file_writers: fwriters,
-            buffer: t,
+            buffer: ThreadLocal::<RefCell<LocalSetBuffer>>::new(),
         }
     }
 
